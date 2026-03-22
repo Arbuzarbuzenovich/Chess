@@ -1,1 +1,1 @@
-SUPPORTED_MODES = ["classic", "ai"]
+SUPPORTED_MODES = ["classic", "ai", "online"]
