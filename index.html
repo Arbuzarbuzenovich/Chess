@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess — сетевой шахматный проект</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-soft: #1e293b;
+      --card: rgba(255,255,255,0.06);
+      --text: #e5eefc;
+      --muted: #b7c4dd;
+      --accent: #22c55e;
+      --accent-2: #60a5fa;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 18px 45px rgba(0,0,0,.28);
+      --radius: 22px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(96,165,250,.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(34,197,94,.14), transparent 28%),
+        linear-gradient(180deg, #0b1220 0%, #111827 52%, #0f172a 100%);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(8, 15, 28, 0.74);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner,
+    .section-inner,
+    .hero-inner,
+    footer .section-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      color: #08111f;
+      font-size: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    nav {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    nav a {
+      color: var(--muted);
+      font-size: 15px;
+      transition: .2s ease;
+    }
+
+    nav a:hover { color: white; }
+
+    .hero {
+      padding: 64px 0 34px;
+    }
+
+    .hero-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-side {
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 34px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(96,165,250,.12);
+      border: 1px solid rgba(96,165,250,.28);
+      color: #cfe1ff;
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(34px, 6vw, 56px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .lead {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 62ch;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      transition: transform .18s ease, opacity .18s ease, background .18s ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #4ade80);
+      color: #07101d;
+      border: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.04);
+      color: white;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 4px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .mini-card {
+      background: rgba(15,23,42,.62);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 22px;
+    }
+
+    .mini-card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    section {
+      padding: 18px 0 12px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 36px);
+      letter-spacing: -0.02em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 56ch;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .features-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: rgba(96,165,250,.15);
+      border: 1px solid rgba(96,165,250,.25);
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .module-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .module-list li {
+      padding: 14px 16px;
+      background: rgba(255,255,255,.04);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .module-list strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .tech-grid,
+    .docs-grid,
+    .labs-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .docs-grid a,
+    .labs-grid .card {
+      display: block;
+    }
+
+    .docs-grid .card:hover {
+      transform: translateY(-2px);
+      transition: transform .18s ease;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .timeline-step {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(96,165,250,.2), rgba(34,197,94,.22));
+      border: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .cta {
+      margin: 22px 0 42px;
+    }
+
+    .cta-box {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(34,197,94,.12), rgba(96,165,250,.14));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .cta-box p { color: var(--muted); margin: 10px 0 0; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 18px 0 36px;
+      color: var(--muted);
+    }
+
+    .footer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-inner,
+      .architecture,
+      .cta-box,
+      .features-grid,
+      .tech-grid,
+      .docs-grid,
+      .labs-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar-inner {
+        padding-top: 14px;
+        padding-bottom: 14px;
+        align-items: start;
+        flex-direction: column;
+      }
+
+      nav { justify-content: flex-start; }
+      .hero { padding-top: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#home">
+        <span class="brand-badge">♞</span>
+        <span>Chess Project</span>
+      </a>
+      <nav>
+        <a href="#about">О проекте</a>
+        <a href="#features">Возможности</a>
+        <a href="#modules">Архитектура</a>
+        <a href="#tech">Технологии</a>
+        <a href="#labs">Лабораторные</a>
+        <a href="#docs">Документы</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow">Одностраничный сайт проекта на основе репозитория</div>
+          <h1>Chess — веб-презентация сетевой шахматной игры</h1>
+          <p class="lead">Проект объединяет локальную игру, партию против искусственного интеллекта и многопользовательский сетевой режим. Сайт кратко показывает назначение продукта, его модули, технологии и результаты всех лабораторных работ.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#docs">Открыть документы</a>
+            <a class="btn btn-secondary" href="https://github.com/Arbuzarbuzenovich/Chess" target="_blank" rel="noopener noreferrer">Перейти в репозиторий</a>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric"><strong>14</strong><span>ключевых модулей</span></div>
+            <div class="metric"><strong>6</strong><span>лабораторных работ</span></div>
+            <div class="metric"><strong>1–100</strong><span>уровни сложности ИИ</span></div>
+          </div>
+        </div>
+        <aside class="hero-side">
+          <div class="mini-card">
+            <h3>Что находится на сайте</h3>
+            <p>Описание проекта, функции приложения, модульная архитектура, стек технологий, этапы выполнения работ и единый блок ссылок на отчётные материалы.</p>
+            <div class="chip-row">
+              <span class="chip">HTML</span>
+              <span class="chip">CSS</span>
+              <span class="chip">GitHub Pages</span>
+              <span class="chip">Одностраничный сайт</span>
+            </div>
+          </div>
+          <div class="mini-card">
+            <h3>Режимы использования</h3>
+            <p>Локальная игра на одном устройстве, игра против компьютерного соперника, создание сетевой комнаты и подбор соперника по рейтингу и параметрам матча.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>О проекте</h2>
+            <p>Chess — это учебный программный проект сетевой шахматной игры, собранный как единая система из интерфейсных, игровых и сетевых модулей.</p>
+          </div>
+        </div>
+        <div class="card">
+          <p>Приложение предназначено для проведения шахматных партий между пользователями, запуска одиночной игры против искусственного интеллекта и демонстрации архитектуры программного продукта в рамках дисциплины «Профессиональная практика программной инженерии». Сайт выполняет роль публичной витрины репозитория: он показывает назначение программы, её сильные стороны, внутреннюю структуру, результаты выполненных лабораторных работ и ссылки на сопроводительные материалы.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>Ключевые возможности</h2>
+            <p>Функционал сайта совпадает по назначению с примером: он презентует проект, его режимы и архитектуру, но выполнен в другом визуальном стиле.</p>
+          </div>
+        </div>
+        <div class="grid features-grid">
+          <article class="card">
+            <div class="icon">♟</div>
+            <h3>Локальная партия</h3>
+            <p>Запуск игры на одном устройстве без сетевого соединения с полноценной обработкой ходов и проверкой правил.</p>
+          </article>
+          <article class="card">
+            <div class="icon">🤖</div>
+            <h3>Игра против ИИ</h3>
+            <p>Выбор соперника с регулируемым уровнем сложности от 1 до 100 и поддержкой автоматического ответа на действия игрока.</p>
+          </article>
+          <article class="card">
+            <div class="icon">🌐</div>
+            <h3>Сетевой режим</h3>
+            <p>Создание комнат, подбор соперника, синхронизация позиции между участниками и сохранение результатов матча.</p>
+          </article>
+          <article class="card">
+            <div class="icon">⏱</div>
+            <h3>Контроль времени</h3>
+            <p>Поддержка таймера партии и различных форматов игрового времени для соревновательных режимов.</p>
+          </article>
+          <article class="card">
+            <div class="icon">📚</div>
+            <h3>История и статистика</h3>
+            <p>Сохранение сыгранных партий, просмотр истории ходов, рейтинг пользователя и общая статистика по результатам.</p>
+          </article>
+          <article class="card">
+            <div class="icon">⚙</div>
+            <h3>Параметры интерфейса</h3>
+            <p>Настройки темы, звука, визуальных эффектов и прочих параметров, влияющих на удобство использования приложения.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="modules">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>Модульная архитектура</h2>
+            <p>Раздел повторяет функциональную задачу примера: показывает архитектуру проекта и группирует основные подсистемы приложения.</p>
+          </div>
+        </div>
+        <div class="architecture">
+          <article class="card">
+            <h3>Пользовательские и игровые модули</h3>
+            <ul class="module-list">
+              <li><strong>AuthService</strong>Регистрация и вход пользователя в систему.</li>
+              <li><strong>PlayerProfile</strong>Профиль игрока, рейтинг и персональные данные.</li>
+              <li><strong>MainMenu / Settings</strong>Главное меню, навигация и настройки приложения.</li>
+              <li><strong>BoardView / MoveProcessor</strong>Отображение доски и обработка ходов.</li>
+              <li><strong>ChessRules / ChessAI / TimerController</strong>Правила игры, искусственный интеллект и контроль времени.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Сетевые и сервисные модули</h3>
+            <ul class="module-list">
+              <li><strong>Lobby</strong>Создание сетевой комнаты и подготовка матча.</li>
+              <li><strong>Matchmaking</strong>Автоматический подбор соперника.</li>
+              <li><strong>NetworkSync</strong>Синхронизация игрового состояния между клиентами.</li>
+              <li><strong>MatchHistory</strong>История сыгранных партий и просмотр результатов.</li>
+              <li><strong>RatingSystem</strong>Пересчёт рейтинга и таблица лидеров.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="tech">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>Используемые технологии</h2>
+            <p>Веб-страница сделана на базовом HTML и CSS, поэтому её можно разместить прямо в репозитории и опубликовать через GitHub Pages.</p>
+          </div>
+        </div>
+        <div class="grid tech-grid">
+          <article class="card">
+            <h3>Frontend</h3>
+            <p>HTML5 для структуры страницы, CSS3 для визуального оформления, адаптивной сетки, карточек и фиксированного верхнего меню.</p>
+          </article>
+          <article class="card">
+            <h3>Хранение и публикация</h3>
+            <p>GitHub как платформа хранения проекта, GitHub Pages как средство публикации статического сайта без отдельного сервера.</p>
+          </article>
+          <article class="card">
+            <h3>Документация</h3>
+            <p>Отчёты по предыдущим лабораторным работам, руководство пользователя, XML- и справочная документация разработчика.</p>
+          </article>
+          <article class="card">
+            <h3>Архитектурный подход</h3>
+            <p>Модульная организация проекта, раздельная реализация интерфейсной, игровой и сетевой частей, удобная для сопровождения и расширения.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="labs">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>Этапы выполнения лабораторных работ</h2>
+            <p>Сайт показывает последовательность развития проекта от постановки задачи и репозитория до документации и финальной веб-публикации.</p>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-step">1</div>
+            <div class="card"><h3>Планирование проекта</h3><p>Определена тема, подготовлен репозиторий и описаны основные модули системы Chess.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-step">2</div>
+            <div class="card"><h3>Ветвление и слияние</h3><p>Проект разделён на тематические ветки, выполнено слияние модулей и разрешение конфликта.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-step">3</div>
+            <div class="card"><h3>Работа с ревизиями</h3><p>Показано удаление файла, фиксация изменений и восстановление данных из ранней ревизии.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-step">4</div>
+            <div class="card"><h3>Самодокументируемый код</h3><p>Добавлены docstring, создан DocBook XML и автоматически сформирована документация разработчика.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-step">5</div>
+            <div class="card"><h3>Руководство пользователя</h3><p>Подготовлено интерактивное руководство пользователя в формате HTA с навигацией по разделам.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-step">6</div>
+            <div class="card"><h3>Итоговая веб-презентация</h3><p>Создан и опубликован одностраничный сайт проекта с разделами о продукте, архитектуре и документах.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="docs">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <h2>Документы и материалы</h2>
+            <p>В этот раздел можно положить файлы предыдущих лабораторных работ. Ссылки уже подготовлены — тебе останется подставить свои реальные имена файлов.</p>
+          </div>
+        </div>
+        <div class="grid docs-grid">
+          <a href="docs/lab1.docx" class="card" target="_blank" rel="noopener noreferrer"><h3>ЛР1</h3><p>Планирование проекта и подготовка репозитория.</p></a>
+          <a href="docs/lab2.docx" class="card" target="_blank" rel="noopener noreferrer"><h3>ЛР2</h3><p>Ветвление, слияние и разрешение конфликта.</p></a>
+          <a href="docs/lab3.docx" class="card" target="_blank" rel="noopener noreferrer"><h3>ЛР3</h3><p>Удаление и восстановление файла из ревизии.</p></a>
+          <a href="docs/lab4.docx" class="card" target="_blank" rel="noopener noreferrer"><h3>ЛР4</h3><p>DocBook, docstring и документация разработчика.</p></a>
+          <a href="docs/lab5.docx" class="card" target="_blank" rel="noopener noreferrer"><h3>ЛР5</h3><p>Руководство пользователя в формате HTA.</p></a>
+          <a href="docs/manual/user_manual.hta" class="card" target="_blank" rel="noopener noreferrer"><h3>Руководство пользователя</h3><p>Интерактивный файл с описанием режимов работы приложения.</p></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="section-inner">
+        <div class="cta-box">
+          <div>
+            <h2>Итог проекта</h2>
+            <p>Сайт объединяет сведения о программном продукте Chess, подводит итог всей серии лабораторных работ и даёт единый доступ к документации и репозиторию.</p>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/Arbuzarbuzenovich" target="_blank" rel="noopener noreferrer">GitHub аккаунт</a>
+            <a class="btn btn-secondary" href="https://github.com/Arbuzarbuzenovich/Chess" target="_blank" rel="noopener noreferrer">Репозиторий Chess</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="section-inner footer-meta">
+      <span>Проект Chess • Лабораторная работа №6</span>
+      <span>GitHub Pages • HTML • CSS</span>
+    </div>
+  </footer>
+</body>
+</html>
